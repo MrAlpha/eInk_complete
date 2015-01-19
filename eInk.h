@@ -20,9 +20,16 @@
 #define RESET BIT2			//P2.2
 #define BUSY_ BIT0			//P2.0
 
+//========================================================================
+extern volatile unsigned char uartBuf;		//
+extern volatile unsigned char Flag;		// Für Datenübergabe aus ISR
+extern volatile unsigned char packageCountdown;
 
+//========= defines for Flag Word ============================
+#define INCOMING 	(1<<0)
+#define DISCARD		(1<<1)
 
-/* Prototype for Initialisation Routine */
+/* Prototype for initialisation routine */
 
 void initStartUp(void);
 

@@ -7,17 +7,29 @@
 
 
 #include "eInk.h"
-#include "FlashTreiber.h"
-#include "timer.h"
+//#include "FlashTreiber.h"
+//#include "timer.h"
 //#include "temp.h"
-#include "pwm.h"
+//#include "pwm.h"
+//#include "powerOnCog.h"
+//#include "writeFrame.h"
 //#include "cogSpi.h"
-#include "powerOnCog.h"
-#include "writeFrame.h"
-#include "cogSpi.h"
-#include "powerOffCog.h"
+//#include "powerOffCog.h"
 
 
+unsigned char stateMachine(unsigned char, unsigned char*, unsigned char*, unsigned char*);
+
+//========= Globale Variablen deklarationen ===================================
+
+extern volatile unsigned char uartBuf=0;	// ||
+extern volatile unsigned char Flag=0;	// used for Flags 0bxxxxxxxx <-LSB
+											//Bit:
+											//		0: INCOMING	new Byte written to uartBuf
+											//		1: DISCARD	this and upcoming data Packages are not for our address
+											//
+extern volatile unsigned char packageCountdown=0;	// states the number of upcoming packages from the uart to be discarded or written to memory
+
+//==============================================================================
 
 
 
@@ -28,41 +40,50 @@ void main(void) {
 
     initStartUp();
 	
-//    unsigned char linebuffer[66];
-//    int foo=0;
-//    for(foo=0;foo<66;foo++){
-//    	if(foo<20){
-//    		linebuffer[foo]=0xAA;
-//    	}
-//    	else if(foo<40){
-//    		linebuffer[foo]=0xFF;
-//    	}
-//    	else
-//    		linebuffer[foo]=0xAA;
-//    }
+//***************************************************************************************************
+	unsigned char deviceID=0;
 
-//    startTimerA0(1,SLEEPOFF);
-//    getTemp();
-//    unsigned char display[7]={255,255,255,255,255,255,255};
-    unsigned char display[7]={0};
-    display[0]='4';
-    display[1]='2';
-    display[2]=',';
-    display[3]='1';
-    display[4]='3';
-    display[5]='E';
+	unsigned char operationsID=0;				//buffers OperationsID (last Instruction)
 
-    powerOnCog();
-    initCog();
-    writeFrame(display,NODUMMY);
-    startTimerA0(500,SLEEPON);
-    powerOff();
+	//unsigned char payload=0;
+
+	unsigned char payload[64]={1};
+//	unsigned char check[64]={0};
+
+	unsigned char packages=0;
+
+//***************************************************************************************************
+	__bis_SR_register(GIE);		//enable global interrupts
+	__bis_SR_register(LPM3_bits);	//goto sleep
+
+    while(1){
+
+    	if(Flag & INCOMING){
+    		Flag &= ~INCOMING;
+    		stateMachine(deviceID, &operationsID, payload, &packages);
+
+    		__bis_SR_register(GIE);		//enable global interrupts
+    		__bis_SR_register(LPM3_bits);		//goto sleep
+    	}
+    }
+ //****************************************************************************************************
+
+////    unsigned char display[7]={255,255,255,255,255,255,255};
+//    unsigned char display[7]={0};
+//    display[0]='4';
+//    display[1]='2';
+//    display[2]=',';
+//    display[3]='1';
+//    display[4]='3';
+//    display[5]='E';
+
+
 //    initCogSpi();
 //    sendCogCommand(&test);
 
-    while(1){
-    	//P2OUT^=BIT7;
-    }
+//    while(1){
+//    	//P2OUT^=BIT7;
+//    }
 
 
 
@@ -70,14 +91,32 @@ void main(void) {
 
 
 
+#pragma vector=USCIAB0RX_VECTOR
+__interrupt void UART_ISR_HOOK(void){
 
+	__bic_SR_register_on_exit(GIE);		//disable global interrupts
+	__bic_SR_register_on_exit(LPM3_bits);	//end sleep
 
+	// USCI_A0 TX buffer ready?
+	while (!(IFG2 & UCA0TXIFG)); // Poll TXIFG to until set
+	UCA0TXBUF = UCA0RXBUF;       // TX -> RXed character
 
-#pragma vector=USCIAB0RX_VECTOR       // (7 * 1u)                     /* 0xFFEE USCI A0/B0 Receive */
-__interrupt void a05(void){
-
-
+	if(!(Flag & DISCARD)){
+	uartBuf=UCA0RXBUF;
+	Flag|=INCOMING;
+	}
+	else{
+		packageCountdown--;
+		if(!packageCountdown)
+			Flag & ~DISCARD;
+		__bis_SR_register_on_exit(LPM3_bits);		//goto sleep
+	}
 }
+
+
+//#pragma vector=USCIAB0RX_VECTOR       // (7 * 1u)                     /* 0xFFEE USCI A0/B0 Receive */
+//__interrupt void a05(void){
+//}
 
 #pragma vector=TIMER0_A1_VECTOR       // (8 * 1u)                     /* 0xFFF0 Timer0)A CC1, TA0 */
 __interrupt void a06(void){

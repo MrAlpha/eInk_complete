@@ -9,6 +9,7 @@
 
 void bscPlusInit();
 void gpioInit();
+void USCI_A0_Init();
 
 
 
@@ -20,9 +21,58 @@ void initStartUp(){
 	bscPlusInit();	//call Clock Initialisation routine
 
 	gpioInit();		//call Input/Output Initialisation routine
+
+	USCI_A0_Init();	//call UART init routine
 }
 
 
+void USCI_A0_Init(void)
+{
+    /* Disable USCI */
+    UCA0CTL1 |= UCSWRST;
+
+    /*
+     * Control Register 1
+     *
+     * UCSSEL_2 -- SMCLK
+     * ~UCRXEIE -- Erroneous characters rejected and UCAxRXIFG is not set
+     * ~UCBRKIE -- Received break characters do not set UCAxRXIFG
+     * ~UCDORM -- Not dormant. All received characters will set UCAxRXIFG
+     * ~UCTXADDR -- Next frame transmitted is data
+     * ~UCTXBRK -- Next frame transmitted is not a break
+     * UCSWRST -- Enabled. USCI logic held in reset state
+     *
+     * Note: ~<BIT> indicates that <BIT> has value zero
+     */
+    UCA0CTL1 = UCSSEL_2 | UCSWRST;
+
+    /*
+     * Modulation Control Register			//9600Baud @ 16MHz
+     *
+     * UCBRF_0 -- First stage 0
+     * UCBRS_2 -- Second stage 2
+     * ~UCOS16 -- Disabled
+     *
+     * Note: ~UCOS16 indicates that UCOS16 has value zero
+     */
+    UCA0MCTL = UCBRF_0 | UCBRS_6;
+
+    /* Baud rate control register 0 */
+    UCA0BR0 = 0x82;
+
+    /* Baud rate control register 1 */
+    UCA0BR1 = 0x06;
+
+    /*Enable receive interrupt on USCI A0 */
+    IE2|=UCA0RXIE;
+
+    /* Enable USCI */
+    UCA0CTL1 &= ~UCSWRST;
+
+    /* USER CODE START (section: USCI_A0_graceInit_epilogue) */
+    /* User code */
+    /* USER CODE END (section: USCI_A0_graceInit_epilogue) */
+}
 
 
 

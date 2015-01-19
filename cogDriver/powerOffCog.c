@@ -27,7 +27,7 @@ void powerOff(){
 
 
 	//unsigned char nothingByte[7]={255,255,255,255,255,255,255};
-	unsigned int up=0;
+//	unsigned int up=0;
 
 	initCogSpi();
 
