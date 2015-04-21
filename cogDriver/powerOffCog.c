@@ -25,15 +25,8 @@ void powerOff(){
 	const struct CogSpiCommands dischargeInt2		 = {0x04, 1, {0xA0}};
 	const struct CogSpiCommands dischargeInt3		 = {0x04, 1, {0x00}};
 
-
-	//unsigned char nothingByte[7]={255,255,255,255,255,255,255};
-//	unsigned int up=0;
-
 	initCogSpi();
 
-	//writeFrame(nothingByte,NODUMMY);	//write nothing Frame, all bits are N(01)
-
-	//writeFrame(nothingByte,DUMMY);	//write dummy line
 	startTimerA0(25,SLEEPON);
 	P2OUT &=~BORDER_CONTROL;			//toggle border Pin
 	startTimerA0(250,SLEEPON);
@@ -52,19 +45,11 @@ void powerOff(){
 	sendCogCommand(&dischargeInt2);
 	startTimerA0(40,SLEEPON);
 	sendCogCommand(&dischargeInt3);
-	//startTimerA0(120,SLEEPON);
-
 
 	P2OUT &= ~(BORDER_CONTROL|RESET|PANAL_ON|EPD_CS);	//set reset, CS, border and voltage to 0
 
 	P2OUT |= DISCHARGE;
 	startTimerA0(150,SLEEPON);
 	P2OUT &= ~DISCHARGE;
-
-
-
-
-
-
 
 }

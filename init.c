@@ -44,7 +44,7 @@ void USCI_A0_Init(void)
      *
      * Note: ~<BIT> indicates that <BIT> has value zero
      */
-    UCA0CTL1 = UCSSEL_2 | UCSWRST;
+    UCA0CTL1 = UCSSEL_2 | UCSWRST;		//remove UCSWRST here?
 
     /*
      * Modulation Control Register			//9600Baud @ 16MHz
@@ -63,15 +63,13 @@ void USCI_A0_Init(void)
     /* Baud rate control register 1 */
     UCA0BR1 = 0x06;
 
-    /*Enable receive interrupt on USCI A0 */
-    IE2|=UCA0RXIE;
-
     /* Enable USCI */
     UCA0CTL1 &= ~UCSWRST;
 
-    /* USER CODE START (section: USCI_A0_graceInit_epilogue) */
-    /* User code */
-    /* USER CODE END (section: USCI_A0_graceInit_epilogue) */
+    /*Enable receive interrupt on USCI A0 */
+    IE2=UCA0RXIE;
+
+
 }
 
 

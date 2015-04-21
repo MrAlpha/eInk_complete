@@ -12,8 +12,6 @@
 #include "powerOnCog.h"
 #include "writeFrame.h"
 #include "powerOffCog.h"
-//#include "pinDefine.h"
-
 
 unsigned char stateMachine(unsigned char deviceID, unsigned char *pOprID, unsigned char *payload, unsigned char *packages){
 
@@ -50,23 +48,31 @@ unsigned char stateMachine(unsigned char deviceID, unsigned char *pOprID, unsign
 			*packages=		 (uartBuf)& 0x3F;
 			state=4;
 		}
-		else if(((*pOprID & 0xC0)==0b01000000)&&((*pOprID & 0x3F)==1)){	//if recived byte is Command and command is 1 (show string)...
+		else if(((*pOprID & 0xC0)==0b01000000)&&((*pOprID & 0x3F)==1)){	//if recived byte is Command and command is 1 ("show"-string)...
 		    powerOnCog();
 		    initCog();
 		    writeFrame(payload,NODUMMY);
 		    startTimerA0(500,SLEEPON);
+		    writeFrame(payload,NODUMMY);
+		    startTimerA0(500,SLEEPON);
 		    powerOff();
+
+		    int i=0;
+		    for(i=0;i<64;i++){	//reset recived string to 0 -> ensures a (partly) white display if no string or less then 6 characters are transmitted. ->see line linker
+		    	payload[i]=0;
+		    }
+		    state=0;
 		}
 		else
 			state=0;
 		break;
 
 	case 4:
-		payload[(*packages) - packageCountdown] = uartBuf;		//
+		payload[(*packages) - packageCountdown] = uartBuf;		//write incomming data to buffer
 		packageCountdown--;
 		if(!packageCountdown){
 			*packages=0;
-			state=0;
+			state=3;
 		}
 		break;
 
@@ -83,7 +89,7 @@ unsigned char stateMachine(unsigned char deviceID, unsigned char *pOprID, unsign
 		}
 		else
 			state=0;
-
+		break;
 
 	}
 return deviceID;

@@ -22,8 +22,8 @@ void writeFrame(unsigned char *display,int dummy){
 
 	int line=0;
 	unsigned char linebuffer[66]={0};
-//	int x=0;
-//	int scan=0;
+
+
 
 	if(dummy==NODUMMY){
 		for(line=0;line<HEIGHT;line++){
@@ -37,9 +37,21 @@ void writeFrame(unsigned char *display,int dummy){
 		}
 	}
 	if(dummy==DUMMY){
+		int i=0;
+		for(i=0; i<66; i++){		//generate Line with 0b01 for every pixel
+			linebuffer[i]=0x55;
+		}
 
-		sendCogLineData(linebuffer,line,dummy);
+	for(line=0;line<HEIGHT;line++){	//write nothing frame
+
+		sendCogLineData(linebuffer,line,NODUMMY);
 
 		sendCogCommand(&outputEnable);
+	}
+
+	sendCogLineData(linebuffer,0,dummy);
+
+	sendCogCommand(&outputEnable);
+
 	}
 }

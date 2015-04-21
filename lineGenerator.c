@@ -76,7 +76,6 @@ void lineGenerator(unsigned char *display, int line, unsigned char *linebuffer){
 			linebuffer[lineBufCount]|=(0x3<<shifts);
 		}
 
-
 		x+=2;
 		shifts-=2;
 
@@ -85,8 +84,6 @@ void lineGenerator(unsigned char *display, int line, unsigned char *linebuffer){
 			lineBufCount++;
 		}
 	}
-
-
 }
 
 /*
@@ -108,7 +105,6 @@ void lineLinker(unsigned char *display, int line, unsigned char *temp){
 		int i =0;
 
 		for(position=0;position<7;position++){
-
 			if(line==120){
 				i=42;
 			}
@@ -193,7 +189,6 @@ void lineLinker(unsigned char *display, int line, unsigned char *temp){
 					for(i=0;i<5;i++){
 						*(temp+position*5+i) = 0xFF;
 					}
-//				continue;
 				}
 			}
 

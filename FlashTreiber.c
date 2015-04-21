@@ -61,7 +61,6 @@ void spiFlashInit(){
 
 void spiWrite(unsigned char Data) {
 	UCB0TXBUF = Data;
-	//delay(1);					//<-This made the difference
 	while (!(IFG2 & UCB0TXIFG)) //_NOP()
 		;
 }
@@ -72,19 +71,12 @@ void spiWrite(unsigned char Data) {
  */
 unsigned char spiRead(unsigned char data) {
 	UCB0TXBUF = data;
-	//delay(1);
 	while ((UCB0STAT & UCBUSY));// _NOP();
 	data = UCB0RXBUF;
 	return data;
 }
 
 /***********************************************end SPI*********************************/
-//Implement Timer funktion here or remove all delay use!!!!!!!!
-void delay(unsigned int ms){
-	while(ms--)
-		__delay_cycles(16000); // set for 16Mhz change it to 1000 for 1 Mhz
-}
-
 
 void setCSlow(){
 	P2OUT &= ~(BIT7);
@@ -103,14 +95,11 @@ unsigned char checkWriteEnable() {
 		return 0;
 }
 
-void setWriteEnable(){ /////WHAT IS WRONG?
+void setWriteEnable(){
 	do{
-		//delay(5);
 		setCSlow();
 		spiWrite(WREN);
 		setCShigh();
-		//delay(5);
-		//_NOP();_NOP();_NOP();_NOP();_NOP();	//<- mayby this made NOT the difference
 	}while(!checkWriteEnable());
 }
 
@@ -126,7 +115,6 @@ unsigned char getStatusRegister(){
 unsigned char getFlashBusy(){
 	unsigned char status=0;
 	status=getStatusRegister();
-//	delay(1);-------------------------------------
 	if((status & WIP)== WIP){
 		return 1;
 	}
@@ -157,7 +145,6 @@ void readData(unsigned long flashAddress, unsigned char *recive, unsigned long b
 
 	setCSlow();
 	spiWrite(FREAD);
-	//delay(1);
 	sendFlashAddress(flashAddress);
 	spiWrite(0x00);
 
@@ -171,7 +158,6 @@ void readData(unsigned long flashAddress, unsigned char *recive, unsigned long b
 void readDataSpiStart(unsigned long flashAddress){
 	setCSlow();
 	spiWrite(FREAD);
-	//delay(1);
 	sendFlashAddress(flashAddress);
 	spiWrite(0x00);
 }
@@ -206,44 +192,20 @@ void writeData(unsigned long flashAddress,unsigned char *send, unsigned long byt
 	while(getFlashBusy()) __no_operation();
 }
 
-void writeDataSpiStart(unsigned long flashAdress){
-
-	while(getFlashBusy()) /*__no_operation()*/;
-
-	setWriteEnable();
-	while(getFlashBusy()) /*__no_operation()*/;
-
-	setCSlow();
-	spiWrite(PP);
-	sendFlashAddress(flashAdress);
-}
-
-void writeDataSpiTransmit(unsigned char send){
-	spiWrite(send);
-}
-
-void writeDataSpiEnd(){
-	setCShigh();
-
-	while(getFlashBusy()) __no_operation();
-}
-
-void eraseSector(unsigned long flashAddress ) {
+void eraseSector(unsigned long flashAddress) {
 	while( getFlashBusy()) /*_NOP()*/;
 	// Setting Write Enable Latch bit
 	setWriteEnable();
 	while(getFlashBusy()) /*__no_operation()*/;
-	// Chip select go low to start a flash command
+	// Chip select goes low to start a flash command
 	setCSlow();
-	//delay(1);
 
 	//Write Sector Erase command = 0x20;
 	spiWrite(SE);
-	//delay(1);
 
 	sendFlashAddress( flashAddress );
 
-	// Chip select go high to end a flash command
+	// Chip select goes high to end a flash command
 	setCShigh();
 	while(getFlashBusy());
 }
@@ -254,8 +216,6 @@ void eraseFlash(){
 
 	setWriteEnable();
 	setCSlow();
-	//spiWrite(WREN);
-	//delay(2);
 	spiWrite(CE);
 	setCShigh();
 

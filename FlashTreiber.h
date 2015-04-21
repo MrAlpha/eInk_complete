@@ -28,8 +28,6 @@
 
 /******************Status Register mask*******************************/
 #define WIP 0x01
-//volatile extern unsigned char spiReceive;
-//volatile extern unsigned int _byteNumber;
 
 //Function Prototypes
 
@@ -37,7 +35,6 @@ void spiFlashInit();
 void spiWrite(unsigned char Data);
 unsigned char spiRead(unsigned char data);
 
-void delay(unsigned int ms);
 
 void setCSlow();
 void setCShigh();
@@ -52,9 +49,7 @@ void readDataSpiStart(unsigned long flashAddress);
 unsigned char readDataSpiData();
 void readDataSpiEnd();
 void writeData(unsigned long flashAddress,unsigned char *send, unsigned long byteNumber);
-void writeDataSpiStart(unsigned long flashAdress);
-void writeDataSpiTransmit(unsigned char send);
-void writeDataSpiEnd();
+
 void eraseSector(unsigned long flashAddress);
 void eraseFlash();
 

@@ -25,16 +25,12 @@ void initCogSpi(){
 	UCB0CTL1 |= UCSSEL_2;	//set SMCLK as clock
 	UCB0BR0  |= 2;			//set Clock divider for Spi =2 -> 16MHz/2= 8MHz
 
-//	IE2 |= UCA0TXIE;		//enable transmit interrupt
-
 	UCB0CTL1 &= ~UCSWRST;	//clear Spi reset
-
-//	__bis_SR_register(GIE);	//enable global interrupts
 }
 
 void sendCogCommand(const struct CogSpiCommands *commandStruct){
 
-	initCogSpi();
+	initCogSpi();		//?????????????????????????
 
 	P2OUT |= EPD_CS;
 	__delay_cycles(160);		//10 us delay
@@ -56,7 +52,6 @@ void sendCogCommand(const struct CogSpiCommands *commandStruct){
 	UCB0TXBUF= 0x72;					//send data header
 	while (!(IFG2 & UCB0TXIFG)) //_NOP()
 		;
-
 
 	int count;
 	for(count=0; count < commandStruct->dataLength; count++){
@@ -159,8 +154,4 @@ void sendCogLineData(unsigned char *data, int line, unsigned char dummy){
 	P2OUT |=EPD_CS;
 }
 
-//#pragma vector =USCIAB0TX_VECTOR
-//__interrupt void spiTxIRvector(void){
-//
-//	__bic_SR_register_on_exit(LPM0_bits);
-//}
+
